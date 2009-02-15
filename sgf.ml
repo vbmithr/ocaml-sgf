@@ -1,9 +1,8 @@
 (** SGF abstract syntax tree *)
-(** Test comment *)
 
-type double     = One | Two
+(* type double     = One | Two *)
 
-type color      = Black | White
+(* type color      = Black | White *)
 
 type collection = gametree list
 
@@ -15,18 +14,18 @@ and node        = property list
 
 and property    = propident * propvalue list
 
-and propident   = ucletter list
+and propident   = string
 
-and propvalue   = cvaluetype
+and propvalue   = string
 
-and cvaluetype  =
-  | ValueType of valuetype
-  | Compose   of valuetype * valuetype
+(* and cvaluetype  = *)
+(*   | ValueType of valuetype *)
+(*   | Compose   of valuetype * valuetype *)
 
-and valuetype   =
-  | None
-  | Number     of int
-  | Real       of float
-  | Double     of double
-  | Color      of color
-  | SimpleText of string
+(* and valuetype   = *)
+(*   | None *)
+(*   | Number     of int *)
+(*   | Real       of float *)
+(*   | Double     of double *)
+(*   | Color      of color *)
+(*   | SimpleText of string *)

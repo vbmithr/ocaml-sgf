@@ -1,3 +1,4 @@
+open Ast
 open Printf
 open Lexing
 

@@ -1,27 +1,38 @@
 %{
+
+open Ast
+
 %}
 
-%token <string> STRING PROPIDENT
-%token LPAR RPAR SEMI
+%token<string> PN PC
+%token LPAR RPAR LBRA RBRA SEMI EOF
 
-%start <Sgf.collection> collection
+%start <Ast.collection> collection
 
 %%
 
 collection:
-| col = gametree+ { col }
+| col = gametree+ EOF
+    { col }
 
 gametree:
-| LPAR seq = sequence gmt = gametree* RPAR { (seq, gmt) }
+| LPAR gt = gametree+ RPAR
+    { GT gt }
+| LPAR seq = sequence RPAR
+    { Seq seq }
 
 sequence:
-| seq = node+ { seq }
+| seq = node+
+    { seq }
 
 node:
-| SEMI prop = property* { prop }
+| SEMI pl = property*
+    { pl }
 
 property:
-| pi = PROPIDENT pv = propvalue+ { (pi, pv) }
+| name = PN LBRA vl = value+ RBRA
+    { { prop_name  = name;
+        prop_value = vl } }
 
-propvalue:
-| s = STRING { s }
+value:
+| s = PC { s }

@@ -1,25 +1,14 @@
-# -*- Makefile -*-
+default:
+	ocamlbuild -yaccflags --explain -classic-display main.native
 
-.PHONY: default opt byte clean
+top:
+	ocamlbuild -no-log -classic-display testing.cma
+	ocamlmktop _build/testing.cma -o _build/main.top
+	_build/main.top -I _build
 
-# Config
-# ------------------------------------------------ #
-OCAMLBUILD         = ocamlbuild
-OPTIONS            = -tag debug -quiet
-BINARIES           = main
-DOCDIR             = main.docdir
+tar:
+	tar -cvvzf asc.tar.gz *.ml Makefile parser.mly lexer.mll \
+	*.ex _tags
 
-# Rules
-# ------------------------------------------------ #
-default: opt
-
-opt:
-	$(OCAMLBUILD) $(OPTIONS) $(BINARIES:%=%.native)
-
-byte:
-	$(OCAMLBUILD) $(OPTIONS) $(BINARIES:%=%.byte)
-
-doc:
-	$(OCAMLBUILD) $(DOCDIR)/index.html
 clean:
-	$(OCAMLBUILD) -clean
+	ocamlbuild -clean

@@ -1,60 +1,65 @@
 {
-  (* code recopie en debut de fichier *)
-  exception Eof
-  exception UnterminatedString
-  exception InvalidChar
+  open Parser
+  open Lexing
+  open Errors
+
+  let newline lexbuf =
+    lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with
+                             pos_lnum = lexbuf.lex_curr_p.pos_lnum + 1;
+                             pos_bol =  lexbuf.lex_curr_p.pos_cnum;
+                         }
 }
 
-let digit     = ['0'-'9']
-let ucletter  = ['A'-'Z']
-
-let propident = ucletter+
-
-let number = ('+'|'-')? digit+
-let real   = number ('.' digit+ )?
-
-(* let double = '1' | '2' *)
-(* let color  = 'B' | 'W' *)
-
-(* à compléter (UTF-8) *)
-let blank = [' ' '\t']
-
+let blank = (' ' | '\t')
 let newline = ('\n' | '\r' | "\r\n" "\n\r")
 
-(* let property = ucletter | digit | *)
+let alpha = ['a'-'z''A'-'Z''0'-'9''_']*
+let digit = ['0'-'9']
+let lower = ['a'-'z']
+let upper = ['A'-'Z']
 
 rule token = parse
-  | '['
-      { let string_start = lexeme_start_p lexbuf in
-        let s = (string string_start (Buffer.create 10) lexbuf) in
-          lexbuf.lex_start_p <- string_start;
-          STRING s }
-  | '('   { LPAR }
-  | ')'   { RPAR }
-  | ';'   { SEMI }
-  | blank { token lexbuf }
-  | propident as s { PROPIDENT(s) }
 
-  | _ as c      { raise InvalidChar }
-  | eof         { raise Eof }
+(* Début d'une prop *)
+  | '['
+      { let prop_start = lexeme_start_p lexbuf in
+        let s = (prop prop_start (Buffer.create 10) lexbuf) in
+          lexbuf.lex_start_p <- prop_start;
+          PC s }
+
+
+  | blank+     { token lexbuf }
+  | newline    { newline lexbuf; token lexbuf }
+
+(* Ponctuation *)
+  | '(' { LPAR }
+  | ')' { RPAR }
+  | ";" { SEMI }
+
+  | upper+ as name { PN(name) }
+  | eof            { EOF }
+
+  (* Caractère inconnu *)
+  | _ as c          { raise_lexing_exception
+			(InvalidChar (lexeme_start_p lexbuf, c)) }
 
 (* start est la position de depart de la chaine, buf le buffer contenant
    la partie deja lue de la chaine *)
-and string start buf = parse
+and prop start buf = parse
   | '\\' newline
-    { string start buf lexbuf }
-  | ']' (* Caractère de fin de chaine. *)
-    { Buffer.contents buf }
-  | eof { raise UnterminatedString }
-  | '\\' (_ as c) | _ as c
-    { Buffer.add_char buf c;
-      string start buf lexbuf }
+      { prop start buf lexbuf }
+  | ']'
+      { Buffer.contents buf }
+  | newline
+      { newline lexbuf;
+        Buffer.add_char buf '\n';
+        prop start buf lexbuf }
+  | '\\' (_ as c)
+      { Buffer.add_char buf c;
+        prop start buf lexbuf }
+  | eof
+      { raise_lexing_exception (UnterminatedProp start) }
 
-{
-  (* code recopie en fin de fichier *)
-  (* boucle d'appel de lexeur pour chaque lexeme *)
-  let lexbuf = Lexing.from_channel stdin in
-    try
-      token lexbuf
-    with Eof -> ()
-}
+  | _ as c
+      { Buffer.add_char buf c;
+        prop start buf lexbuf }

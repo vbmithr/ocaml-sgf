@@ -12,22 +12,16 @@ open Ast
 %%
 
 collection:
-| col = gametree+ EOF
-    { col }
+| col = gametree+ EOF { col }
 
 gametree:
-| LPAR gt = gametree+ RPAR
-    { GT gt }
-| LPAR seq = sequence RPAR
-    { Seq seq }
+| LPAR seq = sequence gt = gametree* RPAR { seq, gt }
 
 sequence:
-| seq = node+
-    { seq }
+| seq = node+ { seq }
 
 node:
-| SEMI pl = property*
-    { pl }
+| SEMI pl = property* { pl }
 
 property:
 | name = PN vl = value+

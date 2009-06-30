@@ -1,3 +1,2 @@
 true: use_menhir
-<*.ml>: dtypes, warn_Z
-
+<*.ml>: dtypes, warn_Z, rectypes

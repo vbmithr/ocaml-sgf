@@ -3,7 +3,7 @@ open Printf
 open Lexing
 
 let rec print_col ch c =
-  List.iter (fun x -> print_gm ch x; Printf.printf "\n\n%!") c
+  List.iter (fun x -> print_gm ch x; Printf.printf "\n%!") c
 
 and print_gm ch gm =
   Printf.fprintf ch "(%!";
@@ -21,4 +21,6 @@ and print_node ch n =
 
 and print_prop ch {prop_name = pn; prop_value = pv} =
   Printf.fprintf ch "%s%!" pn;
-  List.iter (fun x -> Printf.fprintf ch "[%s] %!" x) pv
+  List.iter (fun x -> Printf.fprintf ch "[%s]%!" x) pv;
+  if not ((String.length pn) = 1 && (pn.[0] = 'B' || pn.[0] = 'W'))
+  then Printf.fprintf ch "\n%!"

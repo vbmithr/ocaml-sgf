@@ -5,7 +5,7 @@ open Ast
 %}
 
 %token<string> PN PC
-%token LPAR RPAR LBRA RBRA SEMI EOF
+%token LPAR RPAR SEMI EOF
 
 %start <Ast.collection> collection
 
@@ -30,7 +30,7 @@ node:
     { pl }
 
 property:
-| name = PN LBRA vl = value+ RBRA
+| name = PN vl = value+
     { { prop_name  = name;
         prop_value = vl } }
 

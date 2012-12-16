@@ -1,10 +1,8 @@
 %{
-
 open Ast
-
 %}
 
-%token<string> PN PC
+%token<string> PROPNAME PROPCONTENT
 %token LPAR RPAR SEMI EOF
 
 %start <Ast.collection> collection
@@ -12,21 +10,22 @@ open Ast
 %%
 
 collection:
-| col = gametree+ EOF { col }
+| col = gametree+ EOF { (col:collection) }
 
 gametree:
-| LPAR seq = sequence gt = gametree* RPAR { seq, gt }
+| LPAR seq = sequence RPAR { Leaf seq }
+| LPAR seq = sequence gt = gametree* RPAR { Node (seq, gt) }
 
 sequence:
-| seq = node+ { seq }
+| seq = node+ { (seq:sequence) }
 
 node:
-| SEMI pl = property* { pl }
+| SEMI pl = property+ { (pl:node) }
 
 property:
-| name = PN vl = value+
+| name = PROPNAME vl = value+
     { { prop_name  = name;
         prop_value = vl } }
 
 value:
-| s = PC { s }
+| s = PROPCONTENT { s }

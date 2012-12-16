@@ -25,7 +25,7 @@ rule token = parse
       { let prop_start = lexeme_start_p lexbuf in
         let s = (prop prop_start (Buffer.create 10) lexbuf) in
           lexbuf.lex_start_p <- prop_start;
-          PC s }
+          PROPCONTENT s }
 
 
   | blank+     { token lexbuf }
@@ -36,7 +36,7 @@ rule token = parse
   | ')' { RPAR }
   | ";" { SEMI }
 
-  | upper+ as name { PN(name) }
+  | upper+ as name { PROPNAME(name) }
   | eof            { EOF }
 
   (* Caractère inconnu *)

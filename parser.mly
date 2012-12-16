@@ -14,7 +14,7 @@ collection:
 
 gametree:
 | LPAR seq = sequence RPAR { Leaf seq }
-| LPAR seq = sequence gt = gametree* RPAR { Node (seq, gt) }
+| LPAR seq = sequence gt = gametree+ RPAR { Node (seq, gt) }
 
 sequence:
 | seq = node+ { (seq:sequence) }

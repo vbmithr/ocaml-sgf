@@ -1,5 +1,5 @@
-type property   = { prop_name:  string;
-                    prop_value: string list }
+type property   = { pname:  string;
+                    pvalue: string list }
 type node       = property list
 type sequence   = node list
 type gametree   = Node of sequence * gametree list | Leaf of sequence

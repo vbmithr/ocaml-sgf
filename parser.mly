@@ -24,8 +24,8 @@ node:
 
 property:
 | name = PROPNAME vl = value+
-    { { prop_name  = name;
-        prop_value = vl } }
+    { { pname  = name;
+        pvalue = vl } }
 
 value:
 | s = PROPCONTENT { s }

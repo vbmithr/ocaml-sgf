@@ -2,10 +2,10 @@ open Ast
 open Printf
 open Lexing
 
-let print_prop ch {prop_name = pn; prop_value = pv} =
-  Printf.fprintf ch "%s" pn;
-  List.iter (fun x -> Printf.fprintf ch "[%s]" x) pv;
-  if not ((String.length pn) = 1 && (pn.[0] = 'B' || pn.[0] = 'W'))
+let print_prop ch {pname; pvalue} =
+  Printf.fprintf ch "%s" pname;
+  List.iter (fun x -> Printf.fprintf ch "[%s]" x) pvalue;
+  if not ((String.length pname) = 1 && (pname.[0] = 'B' || pname.[0] = 'W'))
   then Printf.fprintf ch "\n"
 
 let print_node ch n =

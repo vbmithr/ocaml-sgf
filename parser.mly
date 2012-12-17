@@ -23,9 +23,4 @@ node:
 | SEMI pl = property+ { (pl:node) }
 
 property:
-| name = PROPNAME vl = value+
-    { { pname  = name;
-        pvalue = vl } }
-
-value:
-| s = PROPCONTENT { s }
+| name = PROPNAME vl = PROPCONTENT+ { property_of_tuple name vl }

@@ -1,1 +1,1 @@
-true: use_ocamlfind, use_menhir, annot
+true: use_ocamlfind, use_menhir, annot, use_str

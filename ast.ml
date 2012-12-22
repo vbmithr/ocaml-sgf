@@ -20,14 +20,13 @@ type pvalue =
   | Number  of int
   | Real    of float
   | Normal | Emph
-  | Black | White
+  | Black  | White
   | Text    of string
   | Point   of char * char
   | Move    of char * char
   | Compose of pvalue * pvalue
 
-type pvalues = One of pvalue | List of pvalue list
-
+type pvalues    = One of pvalue | List of pvalue list
 type property   = string * pvalues
 type node       = property list
 type sequence   = node list
@@ -40,10 +39,22 @@ let point_of_string str = Point (str.[0], str.[1])
 
 let move_of_string str = Move (str.[0], str.[1])
 
+let double_of_string = function
+  | "1" -> Normal
+  | "2" -> Emph
+  | _   -> failwith "double_of_string"
+
+let color_of_string = function
+  | "B" | "b" -> Black
+  | "W" | "w" -> White
+  | _   -> failwith "color_of_string"
+
 let number_of_string ?range str =
   let number = int_of_string str in match range with
     | Some (a,b) -> assert (number >= a && number <= b); Number number
     | None -> Number number
+
+let real_of_string str = Real (float_of_string str)
 
 let compose_of_string ~f ?s str =
   let sep = Str.regexp_string ":" in
@@ -57,24 +68,28 @@ let property_of_tuple pname pvalues =
   let pvalue = try List.hd pvalues with Failure "hd" -> "" in
   match pname with
     (* Move *)
-    | "B" ->  pname, List (List.map move_of_string pvalues)
+    | "B" | "W" -> pname, List (List.map move_of_string pvalues)
     | "KO" -> pname, One Empty
     | "MN" -> pname, One (number_of_string pvalue)
-    | "W" ->  pname, List (List.map move_of_string pvalues)
 
     (* Setup *)
-    | "AB" -> pname, List (List.map point_of_string pvalues)
-    | "AE" -> pname, List (List.map point_of_string pvalues)
-    | "AW"  -> pname, List (List.map point_of_string pvalues)
-    | "PL" -> pname,
-      (match pvalue with
-        | "B" -> One Black
-        | "W" -> One White
-        | oth -> failwith
-          (Printf.sprintf "property_of_tuple: unknown color %s" oth))
+    | "AB" | "AE" | "AW" -> pname, List (List.map point_of_string pvalues)
+    | "PL" -> pname, One (color_of_string pvalue)
 
     (* Node annotation *)
-    | "C" -> pname, One (Text pvalue)
+    | "C" | "N" -> pname, One (Text pvalue)
+    | "DM" | "GB" | "GW" | "HO" | "UC" -> pname, One (double_of_string pvalue)
+    | "V"  -> pname, One (real_of_string pvalue)
+
+    (* Move annotation *)
+    | "BM" | "TE" -> pname, One (double_of_string pvalue)
+    | "DO" | "IT" -> pname, One Empty
+
+    (* Markup *)
+    | "AR" | "LN" -> pname, List (List.map (compose_of_string ~f:point_of_string) pvalues)
+    | "CR" | "DD" -> pname, List (List.map point_of_string pvalues)
+    | "LB" -> pname, List (List.map (compose_of_string ~f:point_of_string ~s:text_of_string) pvalues)
+    | "MA" | "SL" | "SQ" | "TR" -> pname, List (List.map point_of_string pvalues)
 
     (* Root *)
     | "AP" -> pname, One (compose_of_string ~f:text_of_string pvalue)
@@ -87,10 +102,25 @@ let property_of_tuple pname pvalues =
        with Failure _ -> One (number_of_string pvalue))
 
     (* Game Info *)
-    | "RU" -> pname, One (Text pvalue)
+    | "AN" | "BR" | "BT" | "CP" | "DT" | "EV" | "GN" | "GC" | "ON"
+    | "OT" | "PB" | "PC" | "PW" | "RE" | "RO" | "RU" | "SO" | "US"
+    | "WR" | "WT" -> pname, One (Text pvalue)
+    | "TM" -> pname, One (real_of_string pvalue)
+
+    (* Timing *)
+    | "BL" | "WL" -> pname, One (real_of_string pvalue)
+    | "OB" | "OW" -> pname, One (number_of_string pvalue)
 
     (* Go specific *)
-    | "KM" -> pname, One (Real (float_of_string pvalue))
+    | "HA" -> pname, One (number_of_string pvalue)
+    | "KM" -> pname, One (real_of_string pvalue)
+    | "TB" | "TW" -> pname, List (List.map point_of_string pvalues)
+
+    (* Misc *)
+    | "FG" -> pname, (match pvalues with [] -> One Empty | _ ->
+      List (List.map (compose_of_string ~f:point_of_string ~s:text_of_string) pvalues))
+    | "PM" -> pname, One (number_of_string pvalue)
+    | "VW" -> pname, List (List.map point_of_string pvalues)
 
     (* Unknown *)
     | oth -> oth, One (Text pvalue)

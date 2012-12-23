@@ -19,16 +19,10 @@
   open Parser
   open Lexing
   open Errors
-
-  let newline lexbuf =
-    lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with
-                             pos_lnum = lexbuf.lex_curr_p.pos_lnum + 1;
-                             pos_bol =  lexbuf.lex_curr_p.pos_cnum;
-                         }
 }
 
 let blank = (' ' | '\t')
-let newline = ('\n' | '\r' | "\r\n" "\n\r")
+let newline = ('\n' | '\r' | "\r\n" | "\n\r")
 
 let alpha = ['a'-'z''A'-'Z''0'-'9''_']*
 let digit = ['0'-'9']
@@ -46,7 +40,7 @@ rule token = parse
 
 
   | blank+     { token lexbuf }
-  | newline    { newline lexbuf; token lexbuf }
+  | newline    { new_line lexbuf; token lexbuf }
 
 (* Ponctuation *)
   | '(' { LPAR }
@@ -68,7 +62,7 @@ and prop start buf = parse
   | ']'
       { Buffer.contents buf }
   | newline
-      { newline lexbuf;
+      { new_line lexbuf;
         Buffer.add_char buf '\n';
         prop start buf lexbuf }
   | '\\' (_ as c)

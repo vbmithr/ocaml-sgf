@@ -15,13 +15,44 @@
  *
  *)
 
-let file = ref ""
-let args = []
-let usage = "Usage: ./main.native <options> [fichier] (stdin par default)"
+open Ulexing
+open Parser
 
-let () =
-  Arg.parse args (fun s -> file := s) usage;
-  let ch = if !file = "" then stdin else open_in !file in
-  let lexbuf = Ulexing.from_utf8_channel ch in
-  let c = Parser.collection Lexer.token lexbuf in
-  Print.print_col stdout c
+let regexp newline = ('\n' | '\r' | "\r\n" | "\n\r")
+
+let rec prop buf = lexer
+  | '\\' newline -> prop buf lexbuf
+
+  | ']' -> Buffer.contents buf
+
+  | newline ->
+    Buffer.add_char buf '\n';
+    prop buf lexbuf
+
+  | '\\' _  ->
+    Buffer.add_string buf (utf8_lexeme lexbuf);
+    prop buf lexbuf
+
+  | eof -> failwith "Unterminated prop"
+
+  | _ ->
+    Buffer.add_string buf (utf8_lexeme lexbuf);
+    prop buf lexbuf
+
+
+let rec token = lexer
+
+(* Début d'une prop *)
+  | '[' ->
+    PROPCONTENT (prop (Buffer.create 10) lexbuf)
+
+  | (' ' | '\t')+ -> token lexbuf
+  | newline -> token lexbuf
+
+(* Ponctuation *)
+  | '(' -> LPAR
+  | ')' -> RPAR
+  | ';' -> SEMI
+
+  | ['A'-'Z']+ -> PROPNAME(utf8_lexeme lexbuf)
+  | eof   -> EOF

@@ -1,1 +1,1 @@
-true: use_ocamlfind, use_menhir, annot, use_str
+true: use_ocamlfind, use_menhir, annot, use_str, syntax(camlp4o), package(ulex)

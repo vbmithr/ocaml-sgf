@@ -1,5 +1,5 @@
 all:
-	ocamlbuild -yaccflags --explain main.native
+	ocamlbuild -use-ocamlfind -yaccflags --explain main.native
 
 clean:
 	ocamlbuild -clean

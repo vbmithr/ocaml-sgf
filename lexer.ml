@@ -18,41 +18,54 @@
 open Ulexing
 open Parser
 
+exception Error of string
+
 let regexp newline = ('\n' | '\r' | "\r\n" | "\n\r")
+let regexp tab = ['\t''\x0b']
+let regexp wsp = [' ''\t']
 
-let rec prop buf = lexer
-  | '\\' newline -> prop buf lexbuf
+let rec prop_scanner nlines buf = lexer
+  (* White spaces other than linebreaks are converted to space
+     (e.g. no tab, vertical tab, ..). *)
+  | tab -> Buffer.add_char buf ' '; prop_scanner nlines buf lexbuf
 
-  | ']' -> Buffer.contents buf
+  (* Soft line break: linebreaks preceded by a \ (soft linebreaks
+     are converted to , i.e. they are removed) *)
+  | '\\' newline -> prop_scanner (succ nlines) buf lexbuf
+
+  | ']' -> nlines, Buffer.contents buf
 
   | newline ->
-    Buffer.add_char buf '\n';
-    prop buf lexbuf
-
-  | '\\' _  ->
     Buffer.add_string buf (utf8_lexeme lexbuf);
-    prop buf lexbuf
+    prop_scanner (succ nlines) buf lexbuf
 
-  | eof -> failwith "Unterminated prop"
+  | '\\' [^'\t''\x0b']  ->
+    Buffer.add_string buf (utf8_lexeme lexbuf);
+    prop_scanner nlines buf lexbuf
+
+  | '\\' tab ->
+    Buffer.add_char buf ' ';
+    prop_scanner nlines buf lexbuf
+
+  | eof -> raise (Error "Unterminated prop")
 
   | _ ->
     Buffer.add_string buf (utf8_lexeme lexbuf);
-    prop buf lexbuf
+    prop_scanner nlines buf lexbuf
 
+let rec main_scanner nlines = lexer
 
-let rec token = lexer
-
-(* Début d'une prop *)
+  (* Début d'une prop *)
   | '[' ->
-    PROPCONTENT (prop (Buffer.create 10) lexbuf)
+    let nlines, content = prop_scanner nlines (Buffer.create 10) lexbuf in
+    nlines, PROPCONTENT (content)
 
-  | (' ' | '\t')+ -> token lexbuf
-  | newline -> token lexbuf
+  | wsp+ -> main_scanner nlines lexbuf
+  | newline -> main_scanner (succ nlines) lexbuf
 
-(* Ponctuation *)
-  | '(' -> LPAR
-  | ')' -> RPAR
-  | ';' -> SEMI
+  | '(' -> nlines, LPAR
+  | ')' -> nlines, RPAR
+  | ';' -> nlines, SEMI
 
-  | ['A'-'Z']+ -> PROPNAME(utf8_lexeme lexbuf)
-  | eof   -> EOF
+  | ['A'-'Z']+ -> nlines, PROPNAME(utf8_lexeme lexbuf)
+  | eof   -> nlines, EOF

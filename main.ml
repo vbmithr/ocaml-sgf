@@ -15,6 +15,25 @@
  *
  *)
 
+exception Scanning_error of Lexing.position * string
+exception Syntax_error of Lexing.position
+
+let parse menhir_parser lexbuf =
+  let position = ref
+    Lexing.({ pos_fname = Sys.argv.(1); pos_lnum = 1; pos_bol = 0; pos_cnum = 0 }) in
+  let lexer () =
+    let ante_position = !position in
+    let nlines, token = Lexer.main_scanner 1 lexbuf in
+    let () = position := Lexing.({!position with pos_lnum = !position.pos_lnum + nlines;}) in
+    let post_position = !position
+    in (token, ante_position, post_position) in
+  let revised_parser = MenhirLib.Convert.Simplified.traditional2revised menhir_parser
+  in try
+       revised_parser lexer
+    with
+      | Lexer.Error x -> raise (Scanning_error (!position, x))
+      | Parser.Error  -> raise (Syntax_error !position)
+
 let file = ref ""
 let args = []
 let usage = "Usage: ./main.native <options> [fichier] (stdin par default)"
@@ -23,5 +42,5 @@ let () =
   Arg.parse args (fun s -> file := s) usage;
   let ch = if !file = "" then stdin else open_in !file in
   let lexbuf = Ulexing.from_utf8_channel ch in
-  let c = Parser.collection Lexer.token lexbuf in
+  let c = parse Parser.collection lexbuf in
   Print.print_col stdout c

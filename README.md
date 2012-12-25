@@ -2,12 +2,15 @@
 
 This is a simple library for parsing the SGF FF[4] file format used to
 store game records of board games for two players, and especially the
-game of Go. It is implemented with standard OCaml lexing/parsing
-tools, ocamllex and menhir.
+game of Go. It uses ulex and menhir to do the lexing and
+parsing. UTF-8 in SGF files is handled correctly, thanks to ulex.
 
 ## Dependencies
 
+* ulex
 * menhir
+
+You can install these dependencies with OPAM.
 
 ## Building
 

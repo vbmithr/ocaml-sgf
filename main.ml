@@ -19,12 +19,13 @@ exception Scanning_error of Lexing.position * string
 exception Syntax_error of Lexing.position
 
 let parse menhir_parser lexbuf =
+  let open Lexing in
   let position = ref
-    Lexing.({ pos_fname = Sys.argv.(1); pos_lnum = 1; pos_bol = 0; pos_cnum = 0 }) in
+    { pos_fname = Sys.argv.(1); pos_lnum = 1; pos_bol = 0; pos_cnum = 0 } in
   let lexer () =
     let ante_position = !position in
     let nlines, token = Lexer.main_scanner 1 lexbuf in
-    let () = position := Lexing.({!position with pos_lnum = !position.pos_lnum + nlines;}) in
+    let () = position := {!position with pos_lnum = !position.pos_lnum + nlines;} in
     let post_position = !position
     in (token, ante_position, post_position) in
   let revised_parser = MenhirLib.Convert.Simplified.traditional2revised menhir_parser
@@ -32,7 +33,10 @@ let parse menhir_parser lexbuf =
        revised_parser lexer
     with
       | Lexer.Error x -> raise (Scanning_error (!position, x))
-      | Parser.Error  -> raise (Syntax_error !position)
+      | Parser.Error  ->
+        Printf.eprintf "Syntax error at %d,%d.\n"
+          (!position).pos_lnum (!position).pos_cnum;
+        raise (Syntax_error !position)
 
 let file = ref ""
 let args = []

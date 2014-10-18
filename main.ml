@@ -18,10 +18,10 @@
 exception Scanning_error of Lexing.position * string
 exception Syntax_error of Lexing.position
 
-let parse menhir_parser lexbuf =
+let parse fname menhir_parser lexbuf =
   let open Lexing in
   let position = ref
-    { pos_fname = Sys.argv.(1); pos_lnum = 1; pos_bol = 0; pos_cnum = 0 } in
+    { pos_fname = fname; pos_lnum = 1; pos_bol = 0; pos_cnum = 0 } in
   let lexer () =
     let ante_position = !position in
     let nlines, token = Lexer.main_scanner 1 lexbuf in
@@ -40,11 +40,12 @@ let parse menhir_parser lexbuf =
 
 let file = ref ""
 let args = []
-let usage = "Usage: ./main.native <options> [fichier] (stdin par default)"
+let usage =
+  Printf.sprintf "Usage: %s [filename]\nOptions are:" Sys.argv.(0)
 
 let () =
   Arg.parse args (fun s -> file := s) usage;
   let ch = if !file = "" then stdin else open_in !file in
   let lexbuf = Ulexing.from_utf8_channel ch in
-  let c = parse Parser.collection lexbuf in
+  let c = parse !file Parser.collection lexbuf in
   Print.print_col stdout c

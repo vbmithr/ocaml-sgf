@@ -1,6 +1,6 @@
 version = "0.1"
 description = "Parser for SGF files"
-requires = "ulex menhir"
+requires = "ulex menhirLib"
 archive(byte) = "sgf.cma"
 archive(byte, plugin) = "sgf.cma"
 archive(native) = "sgf.cmxa"

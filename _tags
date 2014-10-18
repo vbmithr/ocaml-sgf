@@ -5,4 +5,4 @@ true: use_menhir, bin_annot, debug
 
 <lib/lexer.ml>: syntax(camlp4o), package(ulex)
 <lib/sgf.ml>: package(menhirLib), package(ulex)
-<*/*.{native,byte}>: package(ulex), package(menhirLib), use_str
+<*/*.{native,byte}>: package(ulex), package(menhirLib)

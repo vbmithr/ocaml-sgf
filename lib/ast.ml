@@ -57,12 +57,16 @@ let number_of_string ?range str =
 let real_of_string str = Real (float_of_string str)
 
 let compose_of_string ~f ?s str =
-  let sep = Str.regexp_string ":" in
-  match Str.bounded_split sep str 2 with
-    | [a;b] ->
-      (match s with None -> Compose (f a, f b)
-        | Some s -> Compose (f a, s b))
-    | _ -> failwith "compose_of_string"
+  let open String in
+  try
+    let len = length str in
+    let i = index str ':' in
+    let a = sub str 0 i in
+    let b = sub str (i+1) (len-i-1) in
+    (match s with
+     |None -> Compose (f a, f b)
+     | Some s -> Compose (f a, s b))
+  with Not_found -> invalid_arg "compose_of_string"
 
 let property_of_tuple pname pvalues =
   let pvalue = try List.hd pvalues with Failure "hd" -> "" in

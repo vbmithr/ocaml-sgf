@@ -12,15 +12,21 @@ parsing. UTF-8 in SGF files is handled correctly, thanks to ulex.
 
 You can install these dependencies with OPAM.
 
-## Building
+## Building & installing
 
-Just type `make`. It will produce a `main.native` executable,
-currently, it just takes an SGF file as an input, parse it, and print
-the result in the standard output. The result should be equivalent to
-the input, modulo line breaks / spaces.
+`# make install`
 
-## How to use it
+## Building & installing in OPAM
 
-Look at the `main.ml` to see how it works. This code could be
-transformed into a library using OASIS in no time, don’t hesitate to
-drop me a message if by chance you would need that.
+`# opam pin add .`
+
+## Using and testing
+
+The program `sgftrip` is a test program that parse and print an SGF
+file. It just takes an SGF file as an input, parse it, and print the
+result in the standard output. The result should be equivalent to the
+input, modulo line breaks / spaces.
+
+The library `Sgf` contain functions to parse SGF files. The OCaml
+types resulting from the parsing are in `Ast`. Functions in `Print`
+can be used to print back this AST as an SGF file.

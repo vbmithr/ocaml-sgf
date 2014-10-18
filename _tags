@@ -1,4 +1,4 @@
-true: use_ocamlfind, use_menhir, annot
+true: use_menhir, bin_annot, debug
 <lexer.ml>: syntax(camlp4o), package(ulex)
 <main.ml>: package(menhirLib), package(ulex)
 <*.{native,byte}>: package(ulex), package(menhirLib), use_str

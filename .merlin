@@ -1,0 +1,5 @@
+PRJ sgf
+S src
+B _build/src
+PKG ulex
+PKG menhirLib

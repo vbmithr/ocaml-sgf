@@ -5,5 +5,5 @@ S test
 B _build/lib
 B _build/src
 B _build/test
-PKG ulex
+PKG sedlex
 PKG menhirLib

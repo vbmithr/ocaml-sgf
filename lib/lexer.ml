@@ -15,57 +15,57 @@
  *
  *)
 
-open Ulexing
+open Sedlexing
 open Parser
 
-exception Error of string
+let newline = [%sedlex.regexp? '\n' | '\r' | "\r\n" | "\n\r"]
+let tab = [%sedlex.regexp? Chars "\t\x0b"]
+let wsp = [%sedlex.regexp? Chars " \t"]
 
-let regexp newline = ('\n' | '\r' | "\r\n" | "\n\r")
-let regexp tab = ['\t''\x0b']
-let regexp wsp = [' ''\t']
-
-let rec prop_scanner nlines buf = lexer
+let rec prop_scanner nlines buf lexbuf = match%sedlex lexbuf with
   (* White spaces other than linebreaks are converted to space
      (e.g. no tab, vertical tab, ..). *)
   | tab -> Buffer.add_char buf ' '; prop_scanner nlines buf lexbuf
 
   (* Soft line break: linebreaks preceded by a \ (soft linebreaks
      are converted to , i.e. they are removed) *)
-  | '\\' newline -> prop_scanner (succ nlines) buf lexbuf
+  | '\\', newline -> prop_scanner (succ nlines) buf lexbuf
 
   | ']' -> nlines, Buffer.contents buf
 
   | newline ->
-    Buffer.add_string buf (utf8_lexeme lexbuf);
+    Buffer.add_string buf (Utf8.lexeme lexbuf);
     prop_scanner (succ nlines) buf lexbuf
 
-  | '\\' [^'\t''\x0b']  ->
-    Buffer.add_string buf (utf8_lexeme lexbuf);
+  | '\\', Compl tab ->
+    Buffer.add_string buf (Utf8.lexeme lexbuf);
     prop_scanner nlines buf lexbuf
 
-  | '\\' tab ->
+  | '\\', tab ->
     Buffer.add_char buf ' ';
     prop_scanner nlines buf lexbuf
 
-  | eof -> raise (Error "Unterminated prop")
+  | eof -> failwith "Unterminated prop"
 
   | _ ->
-    Buffer.add_string buf (utf8_lexeme lexbuf);
+    Buffer.add_string buf (Utf8.lexeme lexbuf);
     prop_scanner nlines buf lexbuf
 
-let rec main_scanner nlines = lexer
-
+let rec main_scanner nlines lexbuf =
+  let ucase = [%sedlex.regexp? 'A'..'Z'] in
+  match%sedlex lexbuf with
   (* Début d'une prop *)
   | '[' ->
     let nlines, content = prop_scanner nlines (Buffer.create 10) lexbuf in
     nlines, PROPCONTENT (content)
 
-  | wsp+ -> main_scanner nlines lexbuf
+  | Plus wsp -> main_scanner nlines lexbuf
   | newline -> main_scanner (succ nlines) lexbuf
 
   | '(' -> nlines, LPAR
   | ')' -> nlines, RPAR
   | ';' -> nlines, SEMI
 
-  | ['A'-'Z']+ -> nlines, PROPNAME(utf8_lexeme lexbuf)
+  | Plus ucase -> nlines, PROPNAME(Utf8.lexeme lexbuf)
   | eof   -> nlines, EOF
+  | _ -> failwith "main_scanner"

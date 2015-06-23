@@ -16,5 +16,7 @@ depends: [
   "ocamlfind" {build}
   "sedlex"
   "menhir"
+  "rresult"
 ]
 
+available: [ ocaml-version >="4.02.0" ]

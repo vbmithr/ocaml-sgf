@@ -15,6 +15,8 @@
  *
  *)
 
+open Rresult
+
 let () =
   let files = ref [] in
   let args = [] in
@@ -29,4 +31,8 @@ let () =
     else
       List.map Sgf.sgf_of_file @@ List.rev !files
   in
-  List.iter (Print.print_col stdout) collections
+  List.iter (function
+      | Ok coll -> Sgf.pp_collection Format.std_formatter coll
+      | Error _ -> ()
+    )
+    collections

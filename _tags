@@ -3,6 +3,4 @@ true: use_menhir, bin_annot, debug, safe_string
 <lib>: include
 <test>: include
 
-<lib/lexer.ml>: package(sedlex)
-<lib/sgf.ml>: package(menhirLib), package(sedlex)
-<*/*.{native,byte}>: package(sedlex), package(menhirLib)
+<**/*>: package(menhirLib), package(sedlex), package(rresult)

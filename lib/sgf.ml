@@ -1,5 +1,48 @@
-exception Scanning_error of Lexing.position * string
-exception Syntax_error of Lexing.position
+open Rresult
+
+include Sgftypes
+
+type err =
+  | Lexing_error of Lexing.position * string
+  | Parsing_error of Lexing.position
+
+let rec string_of_pvalue = function
+  | Empty -> ""
+  | Number n -> Printf.sprintf "%d" n
+  | Real r  -> Printf.sprintf "%.2f" r
+  | Normal -> "1" | Emph -> "2"
+  | Black -> "B" | White -> "W"
+  | Text str -> Printf.sprintf "%s" str
+  | Point (a,b) -> Printf.sprintf "%c%c" a b
+  | Move (Some (a,b)) -> Printf.sprintf "%c%c" a b
+  | Move None -> ""
+  | Compose (a,b) -> string_of_pvalue a ^ ":" ^ string_of_pvalue b
+
+let pp_property fmt (pname, pvalues) =
+  Format.fprintf fmt "%s" pname;
+  (match pvalues with
+   | One pvalue -> Format.fprintf fmt "[%s]" (string_of_pvalue pvalue)
+   | List pvalues -> List.iter
+                       (fun pv -> Format.fprintf fmt "[%s]" (string_of_pvalue pv)) pvalues)
+
+let pp_node fmt n =
+  Format.fprintf fmt ";";
+  List.iter (fun x -> pp_property fmt x) n
+
+let pp_sequence fmt s =
+  List.iter (fun x -> pp_node fmt x) s
+
+let rec pp_gametree fmt gm =
+  Format.fprintf fmt "(";
+  (match gm with
+   | Node (seq, gts)  ->
+     pp_sequence fmt seq; List.iter (fun x -> pp_gametree fmt x) gts
+   | Leaf seq ->
+     pp_sequence fmt seq);
+  Format.fprintf fmt ")"
+
+let pp_collection fmt c =
+  List.iter (fun x -> pp_gametree fmt x; Format.fprintf fmt "\n") c
 
 let parse fname menhir_parser lexbuf =
   let open Lexing in
@@ -14,12 +57,11 @@ let parse fname menhir_parser lexbuf =
   let revised_parser =
     MenhirLib.Convert.Simplified.traditional2revised menhir_parser
   in
-  try revised_parser lexer with
-  | Failure x -> raise (Scanning_error (!position, x))
-  | Parser.Error  ->
-    Printf.eprintf "Syntax error at %d,%d.\n"
-      (!position).pos_lnum (!position).pos_cnum;
-    raise (Syntax_error !position)
+  try
+    R.ok @@ revised_parser lexer
+  with
+  | Failure x -> R.error @@ Lexing_error (!position, x)
+  | Parser.Error -> R.error @@ Parsing_error !position
 
 let sgf_of_string s =
   let lexbuf = Sedlexing.Utf8.from_string s in

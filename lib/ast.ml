@@ -23,7 +23,7 @@ type pvalue =
   | Black  | White
   | Text    of string
   | Point   of char * char
-  | Move    of char * char
+  | Move    of (char * char) option
   | Compose of pvalue * pvalue
 
 type pvalues    = One of pvalue | List of pvalue list
@@ -37,7 +37,9 @@ let text_of_string str = Text str
 
 let point_of_string str = Point (str.[0], str.[1])
 
-let move_of_string str = Move (str.[0], str.[1])
+let move_of_string str =
+  try Move (Some (str.[0], str.[1]))
+  with Invalid_argument _ -> Move None
 
 let double_of_string = function
   | "1" -> Normal
@@ -47,7 +49,7 @@ let double_of_string = function
 let color_of_string = function
   | "B" | "b" -> Black
   | "W" | "w" -> White
-  | _   -> failwith "color_of_string"
+  | s -> failwith (Printf.sprintf "color_of_string: got %s" s)
 
 let number_of_string ?range str =
   let number = int_of_string str in match range with
@@ -64,7 +66,7 @@ let compose_of_string ~f ?s str =
     let a = sub str 0 i in
     let b = sub str (i+1) (len-i-1) in
     (match s with
-     |None -> Compose (f a, f b)
+     | None -> Compose (f a, f b)
      | Some s -> Compose (f a, s b))
   with Not_found -> invalid_arg "compose_of_string"
 
@@ -103,7 +105,7 @@ let property_of_tuple pname pvalues =
     | "ST" -> pname, One (number_of_string ~range:(0,3) pvalue)
     | "SZ" -> pname,
       (try One (compose_of_string ~f:number_of_string pvalue)
-       with Failure _ -> One (number_of_string pvalue))
+       with Invalid_argument _ -> One (number_of_string pvalue))
 
     (* Game Info *)
     | "AN" | "BR" | "BT" | "CP" | "DT" | "EV" | "GN" | "GC" | "ON"

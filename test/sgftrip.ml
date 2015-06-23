@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Vincent Bernardoff <vb@luminar.eu.org>
+ * Copyright (c) 2012-2015 Vincent Bernardoff <vb@luminar.eu.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,17 +15,18 @@
  *
  *)
 
-
-let file = ref ""
-let args = []
-let usage =
-  Printf.sprintf "Usage: %s [filename]\nOptions are:" Sys.argv.(0)
-
 let () =
-  Arg.parse args (fun s -> file := s) usage;
-  let c =
-    if !file = ""
-    then Sgf.sgf_of_channel stdin
-    else Sgf.sgf_of_file !file
+  let files = ref [] in
+  let args = [] in
+  let usage =
+    Printf.sprintf "Usage: %s [filenames...]\nOptions are:" Sys.argv.(0) in
+
+  let anon_f s = files := s :: !files in
+  Arg.parse args anon_f usage;
+  let collections =
+    if !files = []
+    then [Sgf.sgf_of_channel stdin]
+    else
+      List.map Sgf.sgf_of_file @@ List.rev !files
   in
-  Print.print_col stdout c
+  List.iter (Print.print_col stdout) collections

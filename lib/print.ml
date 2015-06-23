@@ -27,7 +27,8 @@ let rec string_of_pvalue = function
   | Black -> "B" | White -> "W"
   | Text str -> Printf.sprintf "%s" str
   | Point (a,b) -> Printf.sprintf "%c%c" a b
-  | Move (a,b) -> Printf.sprintf "%c%c" a b
+  | Move (Some (a,b)) -> Printf.sprintf "%c%c" a b
+  | Move None -> ""
   | Compose (a,b) -> string_of_pvalue a ^ ":" ^ string_of_pvalue b
 
 let print_prop ch (pname, pvalues) =

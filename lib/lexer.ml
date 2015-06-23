@@ -47,9 +47,10 @@ let rec prop_scanner nlines buf lexbuf = match%sedlex lexbuf with
 
   | eof -> failwith "Unterminated prop"
 
-  | _ ->
+  | any ->
     Buffer.add_string buf (Utf8.lexeme lexbuf);
     prop_scanner nlines buf lexbuf
+  | _ -> failwith "prop_scanner"
 
 let rec main_scanner nlines lexbuf =
   let ucase = [%sedlex.regexp? 'A'..'Z'] in

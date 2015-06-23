@@ -27,9 +27,9 @@ let () =
   Arg.parse args anon_f usage;
   let collections =
     if !files = []
-    then [Sgf.sgf_of_channel stdin]
+    then [Sgf.of_channel stdin]
     else
-      List.map Sgf.sgf_of_file @@ List.rev !files
+      List.map Sgf.of_file @@ List.rev !files
   in
   List.iter (function
       | Ok coll -> Sgf.pp_collection Format.std_formatter coll

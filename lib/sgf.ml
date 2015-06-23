@@ -80,17 +80,17 @@ let parse fname menhir_parser lexbuf =
   | Failure x -> R.error @@ Lexing_error (!position, x)
   | Parser.Error -> R.error @@ Parsing_error !position
 
-let sgf_of_string s =
+let of_string s =
   let lexbuf = Sedlexing.Utf8.from_string s in
   parse "" Parser.collection lexbuf
 
-let sgf_of_channel ic =
+let of_channel ic =
   let lexbuf = Sedlexing.Utf8.from_channel ic in
   parse "" Parser.collection lexbuf
 
-let sgf_of_file fn =
+let of_file fn =
   let ic = open_in fn in
   try
-    let r = sgf_of_channel ic in close_in ic; r
+    let r = of_channel ic in close_in ic; r
   with exn ->
     close_in ic; raise exn

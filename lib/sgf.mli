@@ -45,9 +45,9 @@ type err =
 
 (** {2 Parsing} *)
 
-val sgf_of_string : string -> (collection, err) result
-val sgf_of_channel : in_channel -> (collection, err) result
-val sgf_of_file : string -> (collection, err) result
+val of_string : string -> (collection, err) result
+val of_channel : in_channel -> (collection, err) result
+val of_file : string -> (collection, err) result
 
 (** {2 Printing} *)
 

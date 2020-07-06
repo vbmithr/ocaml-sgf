@@ -12,7 +12,7 @@ test-run: ["dune" "runtest" "-p" name "-j" jobs]
 depends: [
   "ocaml" {>= "4.02.0"}
   "dune" {>= "1.0"}
-  "sedlex"
+  "sedlex" {>= "2.0"}
   "menhir"
   "rresult"
 ]

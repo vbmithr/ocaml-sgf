@@ -56,7 +56,7 @@ let compose_of_string ~f ?s str =
   with Not_found -> invalid_arg "compose_of_string"
 
 let property_of_tuple pname pvalues =
-  let pvalue = try List.hd pvalues with Failure "hd" -> "" in
+  let pvalue = try List.hd pvalues with Failure _ -> "" in
   match pname with
     (* Move *)
     | "B" | "W" -> pname, List (List.map move_of_string pvalues)

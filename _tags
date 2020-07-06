@@ -1,6 +1,0 @@
-true: use_menhir, bin_annot, debug, safe_string
-
-<lib>: include
-<test>: include
-
-<**/*>: package(menhirLib), package(sedlex), package(rresult)

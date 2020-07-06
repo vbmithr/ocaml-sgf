@@ -1,8 +1,0 @@
-version = "1.0"
-description = "Parser for SGF files"
-requires = "rresult sedlex menhirLib"
-archive(byte) = "sgf.cma"
-archive(byte, plugin) = "sgf.cma"
-archive(native) = "sgf.cmxa"
-archive(native, plugin) = "sgf.cmxs"
-exists_if = "sgf.cma"

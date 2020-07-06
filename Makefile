@@ -1,19 +1,15 @@
-PKG=sgf
-PREFIX=`opam config var prefix`
-BUILDOPTS=native=true native-dynlink=true
-
 all: build
 
 build:
-	ocaml pkg/build.ml $(BUILDOPTS)
+	dune build
 
 install: build
-	opam-installer --prefix=$(PREFIX) $(PKG).install
+	dune install
 
-uninstall: $(PKG).install
-	opam-installer -u --prefix=$(PREFIX) $(PKG).install
-
-PHONY: clean
+uninstall:
+	dune uninstall
 
 clean:
-	ocamlbuild -clean
+	dune clean
+
+.PHONY: clean build install uninstall all
